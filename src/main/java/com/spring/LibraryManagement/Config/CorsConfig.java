@@ -23,7 +23,8 @@ public class CorsConfig {
         config.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
                 "https://library-management-fe-two.vercel.app",
-                "https://library-management-fe.vercel.app"
+                "https://library-management-fe.vercel.app",
+                "https://library-management-fe-leanhduc03s-projects.vercel.app"
         ));
         
         // Các header được phép
