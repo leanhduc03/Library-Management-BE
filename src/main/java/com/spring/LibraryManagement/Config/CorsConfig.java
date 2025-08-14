@@ -20,7 +20,11 @@ public class CorsConfig {
         config.setAllowCredentials(true);
         
         // Nguồn được phép gọi API
-        config.addAllowedOrigin("http://localhost:3000"); // Frontend React mặc định
+        config.setAllowedOrigins(Arrays.asList(
+                "http://localhost:3000",
+                "https://library-management-fe-two.vercel.app",
+                "https://library-management-fe.vercel.app"
+        ));
         
         // Các header được phép
         config.addAllowedHeader("*");
