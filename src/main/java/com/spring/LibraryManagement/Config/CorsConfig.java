@@ -31,11 +31,7 @@ public class CorsConfig {
         config.addAllowedHeader("*");
         
         // Các phương thức HTTP được phép
-        config.addAllowedMethod("GET");
-        config.addAllowedMethod("POST");
-        config.addAllowedMethod("PUT");
-        config.addAllowedMethod("DELETE");
-        config.addAllowedMethod("OPTIONS");
+        config.addAllowedMethod("*");
         
         // Các header được expose cho client
         config.addExposedHeader("Authorization");

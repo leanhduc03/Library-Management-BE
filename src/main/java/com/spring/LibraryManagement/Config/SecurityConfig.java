@@ -23,6 +23,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -34,6 +35,7 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomPermissionEvaluator customPermissionEvaluator;
+    private final CorsFilter corsFilter;
 
     @Bean
     public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
@@ -66,47 +68,48 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults())
+                .cors(cors -> cors.disable())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/auth/**").permitAll()
 
-                        //Books API
+                        // Books API
                         .requestMatchers(HttpMethod.GET, "/books/**").hasAuthority("PERMISSION_BOOK_READ")
                         .requestMatchers(HttpMethod.POST, "/books/**").hasAuthority("PERMISSION_BOOK_CREATE")
                         .requestMatchers(HttpMethod.PUT, "/books/**").hasAuthority("PERMISSION_BOOK_UPDATE")
                         .requestMatchers(HttpMethod.DELETE, "/books/**").hasAuthority("PERMISSION_BOOK_DELETE")
 
-                        //Borrow API
+                        // Borrow API
                         .requestMatchers(HttpMethod.POST, "/borrows").hasAuthority("PERMISSION_BORROW_CREATE")
                         .requestMatchers(HttpMethod.PUT, "/borrows/*/return").hasAuthority("PERMISSION_BORROW_UPDATE")
                         .requestMatchers(HttpMethod.GET, "/borrows").hasAuthority("PERMISSION_BORROW_READ")
                         .requestMatchers(HttpMethod.GET, "/borrows/*").hasAuthority("PERMISSION_BORROW_READ")
                         .requestMatchers(HttpMethod.GET, "/borrows/overdue").hasRole("ADMIN")
 
-                        //Fine API
+                        // Fine API
                         .requestMatchers(HttpMethod.GET, "/fines/my-fines").authenticated()
                         .requestMatchers(HttpMethod.GET, "/fines/my-total").authenticated()
                         .requestMatchers(HttpMethod.GET, "/fines").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/fines/user/*").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/fines/*/mark-paid").hasRole("ADMIN")
 
-                        //File Upload API
+                        // File Upload API
                         .requestMatchers(HttpMethod.POST, "/api/upload/image").hasAnyAuthority(
                                 "PERMISSION_BOOK_CREATE", "PERMISSION_BOOK_UPDATE")
 
-                        //Admin API
+                        // Admin API
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                        //User API
+                        // User API
                         .requestMatchers("/user/**").hasRole("USER")
-                        
+
                         // Tất cả các request còn lại cần xác thực
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex
                         .accessDeniedPage("/error/access-denied"))
+                .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider());
         SecurityFilterChain https = http.build();
